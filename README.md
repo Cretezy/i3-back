@@ -11,7 +11,7 @@ An [i3](https://i3wm.org/) utility to switch focus to your last focused window. 
 
 ## Demo
 
-TODO
+https://user-images.githubusercontent.com/2672503/221384419-3d62413d-8987-4147-82bc-5e87cea8bb90.mp4
 
 ## Installation
 
