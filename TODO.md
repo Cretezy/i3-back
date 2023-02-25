@@ -12,3 +12,11 @@ How this could work:
   - It should verify that it goes to the next existing window. For example, given window A, B, C in the history, if B was closed, it should go from A to C
 - When `i3-back start` receives a focus switch event, it should check if the current config to see if it should update it
   - If it was triggered by `i3-back switch`, indicated by the flag, it should not update the config
+
+# Upstream
+
+This feature could easily be upstream to i3. This could be added as new option to the [`focus` command](https://i3wm.org/docs/userguide.html#_focusing_moving_containers), such as `focus last`. Example usage would be:
+
+```
+bindsym $mod+Tab focus last
+```
