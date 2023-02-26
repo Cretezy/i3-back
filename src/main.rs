@@ -27,6 +27,8 @@ enum I3BackCommands {
     Start {
         #[clap(long, short, action)]
         /// Prints extra debugging information.
+        ///
+        /// - Whenever a new last window ID is saved
         debug: bool,
     },
 
@@ -92,7 +94,9 @@ fn main() -> Result<()> {
 
                             if let Some(last_focused_id) = last_focused_id {
                                 if *debug {
-                                    eprintln!("Saving new last focused ID: {}", last_focused_id);
+                                    eprintln!(
+                                        "Saving new last focused window with ID {last_focused_id}. Current focused window ID is {focused_id}."
+                                    );
                                 }
 
                                 // Save the new last focused ID
@@ -133,6 +137,8 @@ fn main() -> Result<()> {
 }
 
 /// Traverses i3 tree to find which node (including floating) is focused.
+///
+/// Only one node _should_ be focused at a time. This will return the first one.
 fn find_focused_id(tree: Node) -> Option<i64> {
     if tree.focused {
         return Some(tree.id);

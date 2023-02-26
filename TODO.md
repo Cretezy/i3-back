@@ -1,4 +1,14 @@
+# Upstream
+
+This feature could easily be upstream to i3. This could be added as new option to the [`focus` command](https://i3wm.org/docs/userguide.html#_focusing_moving_containers), such as `focus last`. Example usage would be:
+
+```
+bindsym $mod+Tab focus last
+```
+
 # Stack-based switcher
+
+(This is just an idea, and may not be possible to implement with i3's current binding system.)
 
 I believe it would be possible to store the history of focus to allow using the `i3-back switch` command multiple times in a row,
 which would match how Alt+Tab works on other desktop environments.
@@ -13,10 +23,6 @@ How this could work:
 - When `i3-back start` receives a focus switch event, it should check if the current config to see if it should update it
   - If it was triggered by `i3-back switch`, indicated by the flag, it should not update the config
 
-# Upstream
+Considerations:
 
-This feature could easily be upstream to i3. This could be added as new option to the [`focus` command](https://i3wm.org/docs/userguide.html#_focusing_moving_containers), such as `focus last`. Example usage would be:
-
-```
-bindsym $mod+Tab focus last
-```
+- It would be nice to know when `$mod` is released, which would reset the history index. This limitation makes it likely not possible. Alternatively, use a delay.
