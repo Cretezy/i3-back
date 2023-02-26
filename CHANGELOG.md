@@ -1,3 +1,7 @@
+# v0.2.0 - 2023-02-26
+
+- Switch to using D-Bus for IPC when switching. Config file is no longer needed
+
 # v0.1.3 - 2023-02-26
 
 - Added Debian/Ubuntu package
