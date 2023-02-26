@@ -32,7 +32,7 @@ i3-back is written in Rust. It can be installed through many method:
   # or any AUR wrapper, or manually: https://wiki.archlinux.org/title/Arch_User_Repository#Installing_and_upgrading_packages
   ```
 
-- Debian/Ubuntu as a `deb` from [GitHub releases](https://github.com/cretezy/i3-back/releases):
+- Debian/Ubuntu as a `deb` from [GitHub releases](https://github.com/cretezy/i3-back/releases)
 
 - Binary from [GitHub releases](https://github.com/cretezy/i3-back/releases)
 
