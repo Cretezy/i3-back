@@ -4,6 +4,7 @@
 - Commit new version
 - Create tag for version
 - Push commit and tag
+- `cargo release`
 - Run [`cargo aur`](https://crates.io/crates/cargo-aur)
 - Create GitHub release
 - Add `target/release/i3-back` and `i3-back-*.tar.gz` to GitHub release
