@@ -1,3 +1,9 @@
+# v0.3.0 - 2023-02-26
+
+- Switch to using i3 marks. No longer needs D-Bus/config. Thanks [`@nicarran`](https://github.com/nicarran) for the [idea](https://github.com/i3/i3/issues/838#issuecomment-481531210)!
+  - Please update your switch `bindsym` to the new command: `bindsym $mod+Tab [con_mark=_back] focus`
+- Switch to optimized builds and use Debian container to build `deb` release
+
 # v0.2.0 - 2023-02-26
 
 - Switch to using D-Bus for IPC when switching. Config file is no longer needed

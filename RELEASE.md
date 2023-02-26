@@ -3,7 +3,7 @@
 ## Prepare
 
 - Update `CHANGELOG.md`
-- Bump version in `Cargo.toml` and `cargo build`
+- Bump version in `Cargo.toml` and `cargo build --release`
 - Commit new version
 - Create tag for version
 - Push commit and tag
@@ -17,6 +17,7 @@
   - Generate `.SRCINFO`: `makepkg --printsrcinfo > .SRCINFO`
   - Commit new version
 - Run [`cargo deb`](https://crates.io/crates/cargo-deb)
+  - To run inside Docker container: `docker run -it -v .:/app rustlang/rust:nightly bash`, `cargo install cargo-deb`, `cd /app && cargo deb`
 
 ## Release
 
