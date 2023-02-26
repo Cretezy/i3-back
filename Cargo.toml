@@ -1,6 +1,6 @@
 [package]
 name = "i3-back"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "An i3 utility to switch focus to your last focused window. Allows for behavior similar to Alt+Tab on other desktop environments."
 repository = "https://github.com/Cretezy/i3-back"

@@ -1,3 +1,7 @@
+# v0.1.3 - 2023-02-26
+
+- Added Debian/Ubuntu package
+
 # v0.1.2 - 2023-02-26
 
 - Fix crash when restarting i3 while execution
