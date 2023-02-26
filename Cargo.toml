@@ -10,4 +10,5 @@ keywords = ["i3", "sway"]
 authors = ["Charles Crete <charles@cretezy.com>"]
 
 [dependencies]
+anyhow = "1.0.69"
 i3ipc = { version = "0.10.1", features = ["i3-4-14"] }

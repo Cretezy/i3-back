@@ -6,6 +6,13 @@ This feature could easily be upstream to i3. This could be added as new option t
 bindsym $mod+Tab focus last
 ```
 
+# CLI flags
+
+Add flags for:
+
+- Debug mode, shows when mark is set
+- Mark name, allows renaming the `_back` mark name
+
 # Stack-based switcher
 
 (This is just an idea, and may not be possible to implement with i3's current binding system.)

@@ -1,3 +1,7 @@
+# Unrelease
+
+- Refactor error handling
+
 # v0.3.0 - 2023-02-26
 
 - Switch to using i3 marks. No longer needs D-Bus/config. Thanks [`@nicarran`](https://github.com/nicarran) for the [idea](https://github.com/i3/i3/issues/838#issuecomment-481531210)!
