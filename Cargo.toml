@@ -1,6 +1,6 @@
 [package]
 name = "i3-back"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2021"
 description = "An i3/Sway utility to switch focus to your last focused window. Allows for behavior similar to Alt+Tab on other desktop environments."
 repository = "https://github.com/Cretezy/i3-back"
@@ -11,4 +11,6 @@ authors = ["Charles Crete <charles@cretezy.com>"]
 
 [dependencies]
 anyhow = "1.0.69"
+clap = { version = "4.1.6", features = ["derive"] }
+ctrlc = { version = "3.2.5", features = ["termination"] }
 i3ipc = { version = "0.10.1", features = ["i3-4-14"] }

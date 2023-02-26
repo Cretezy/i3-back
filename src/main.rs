@@ -1,26 +1,72 @@
 #![feature(let_chains)]
+use std::process;
 use std::thread;
 use std::time::Duration;
 
-use anyhow::{Context, Error};
+use anyhow::{Context, Result};
+use clap::Parser;
 use i3ipc::reply::Node;
 use i3ipc::I3Connection;
 use i3ipc::I3EventListener;
 use i3ipc::Subscription;
 
-fn main() {
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    /// Change the name of the mark to set.
+    #[arg(short, long, default_value = "_back")]
+    mark: String,
+
+    /// Print extra debugging information.
+    #[arg(short, long)]
+    debug: bool,
+}
+
+fn main() -> Result<()> {
+    let args = Args::parse();
+    let mark = args.mark.clone();
+
+    ctrlc::set_handler(move || {
+        // Clear up mark when exiting
+        let unmark_result: Result<()> = (|| {
+            let mut connection =
+                I3Connection::connect().with_context(|| "Could not connect to i3 (IPC)")?;
+
+            connection
+                .run_command(&format!("unmark {mark}"))
+                .with_context(|| format!("Could not unset i3 mark {mark}"))?;
+
+            Ok(())
+        })();
+
+        if let Err(err) = unmark_result {
+            eprintln!("Error while exiting: {:?}", err);
+            process::exit(1);
+        }
+
+        process::exit(0);
+    })
+    .with_context(|| "Could not set exit handler")?;
+
     loop {
-        if let Err(err) = run() {
+        if let Err(err) = run(&args) {
             eprintln!("Error: {:?}", err)
         }
 
-        eprintln!("\nRestarting in 1s");
-        thread::sleep(Duration::from_secs(1));
+        eprintln!("\nRestarting in 0.5s");
+        thread::sleep(Duration::from_millis(500));
         eprintln!();
     }
 }
 
-fn run() -> Result<(), Error> {
+fn run(args: &Args) -> Result<()> {
+    let mark = args.mark.clone();
+    let debug = args.debug;
+
+    if debug {
+        println!("Starting i3 event listener");
+    }
+
     // Setup listener for i3 events. We'll be listening for window events.
     // This event is triggered whenever the focus changes.
     let mut listener =
@@ -56,37 +102,44 @@ fn run() -> Result<(), Error> {
             }
 
             if let Some(last_focused_id) = last_focused_id {
+                if debug {
+                    println!("Saving window ID {last_focused_id} to {mark} mark. Current window ID is {focused_id}")
+                }
+
                 // Save the new last focused ID as mark
                 connection
-                    .run_command(format!("[con_id={}] mark --add _back", last_focused_id).as_str())
-                    .with_context(|| "Could not set i3 mark _back")?;
+                    .run_command(&format!("[con_id={last_focused_id}] mark --add {mark}"))
+                    .with_context(|| "Could not set i3 mark {name} to {last_focused_id}")?;
             }
 
             last_focused_id = Some(focused_id);
         }
     }
 
+    // Unreachable
     Ok(())
 }
 
 /// Traverses i3 tree to find which node (including floating) is focused.
-///
-/// Only one node _should_ be focused at a time. This will return the first one.
-fn find_focused_id(tree: Node) -> Option<i64> {
-    if tree.focused {
-        return Some(tree.id);
+fn find_focused_id(node: Node) -> Option<i64> {
+    let mut node = node;
+
+    while !node.focused {
+        let focused_id = match node.focus.into_iter().next() {
+            Some(focused_id) => focused_id,
+            None => return None,
+        };
+
+        node = match node
+            .nodes
+            .into_iter()
+            .chain(node.floating_nodes)
+            .find(|n| n.id == focused_id)
+        {
+            Some(focused_id) => focused_id,
+            None => return None,
+        };
     }
 
-    for child in tree.nodes {
-        if let Some(focused_id) = find_focused_id(child) {
-            return Some(focused_id);
-        }
-    }
-    for child in tree.floating_nodes {
-        if let Some(focused_id) = find_focused_id(child) {
-            return Some(focused_id);
-        }
-    }
-
-    None
+    Some(node.id)
 }

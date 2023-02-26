@@ -1,7 +1,13 @@
+# v0.3.2 - 2023-02-26
+
+- Added `--mark`/`-m` option to change i3 mark name (default is `_back`)
+  - Also re-add `--debug`/`-d` option
+- Lowered restart timeout from 1s to 0.5s
+
 # v0.3.1 - 2023-02-26
 
-- Refactor error handling
 - Fix support for floating windows
+- Refactor error handling
 
 # v0.3.0 - 2023-02-26
 

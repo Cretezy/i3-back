@@ -49,11 +49,43 @@ bindsym $mod+Tab [con_mark=_back] focus
 
 Replace `~/.cargo/bin` with wherever the i3-back binary is placed if not installed through Cargo.
 
+## Options
+
+Options are passed to `i3-back` as flags. Use `--help`/`-h` to see all options.
+
+Example `exec` with options:
+
+```
+exec --no-startup-id ~/.cargo/bin/i3-back --debug --mark _last
+```
+
+Available options:
+
+- `--help`/`-h`: See help text. Also see `--version`
+- `--mark <MARK>`/`-m <MARK>`: Change the default `_back` mark name. Make sure to update your switcher bind's `con_mark` to match
+- `--debug`/`-d`: Print extra debugging information
+
+Example `i3-back --help`:
+
+```
+An i3/Sway utility to switch focus to your last focused window. Allows for behavior similar to Alt+Tab on other desktop environments.
+
+Usage: i3-back [OPTIONS]
+
+Options:
+  -m, --mark <MARK>  Change the name of the mark to set [default: _back]
+  -d, --debug        Print extra debugging information
+  -h, --help         Print help
+  -V, --version      Print version
+```
+
 ## How it works
 
-The daemon (`i3-back`) listen for i3 window events. When a window event is received, i3-back records the previously focused window ID. When the previous focus has changed, it sets the `_back` [mark](https://i3wm.org/docs/userguide.html#vim_like_marks).
+The daemon (`i3-back`) listen for i3 window events (through i3's socket, from the `I3SOCK` environment variable).
+When a window event is received, i3-back records the previously focused window ID.
+When the previous focus has changed, it sets the `_back` [mark](https://i3wm.org/docs/userguide.html#vim_like_marks) (or whichever is configured through the `--mark` flag) to the last focused window.
 
-When the switch bind is called, it focuses the mark set by the daemon.
+When the switch bind is called (through i3's `bindsym`), it focuses the mark set by the daemon.
 
 ## Prior work
 
