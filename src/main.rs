@@ -1,4 +1,8 @@
 #![feature(let_chains)]
+use std::process;
+use std::thread;
+use std::time::Duration;
+
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use i3ipc::reply::Node;
@@ -39,7 +43,7 @@ enum I3BackCommands {
     Switch,
 }
 
-#[derive(Default, Debug, Serialize, Deserialize, Clone)]
+#[derive(Default, Debug, Serialize, Deserialize, Clone, Copy)]
 struct I3BackConfig {
     last_focused_id: Option<i64>,
 }
@@ -54,64 +58,81 @@ fn main() -> Result<()> {
         I3BackCommands::Start { debug } => {
             // Reset currently stored last focused ID.
             cfg.last_focused_id = None;
-            confy::store("i3-back", "config", cfg.clone())
+            confy::store("i3-back", "config", cfg)
                 .with_context(|| "Could not write i3-back config")?;
 
-            // Setup listener for i3 events. We'll be listening for window events.
-            // This event is triggered whenever the focus changes.
-            let mut listener = I3EventListener::connect()
-                .with_context(|| "Could not connect to i3 (event listener)")?;
-            listener
-                .subscribe(&[Subscription::Window])
-                .with_context(|| "Could not subscribe to i3 events")?;
+            ctrlc::set_handler(move || {
+                cfg.last_focused_id = None;
+                confy::store("i3-back", "config", cfg)
+                    .with_context(|| "Could not write i3-back config")
+                    .expect("should be able to write config when quitting");
+                process::exit(0)
+            })
+            .with_context(|| "Error setting Ctrl-C handler")?;
 
-            // Setup the RPC connect to i3. We'll use this to get the current i3 tree,
-            // to find the currently focused window's ID.
-            let mut connection =
-                I3Connection::connect().with_context(|| "Could not connect to i3 (RPC)")?;
+            'server: loop {
+                // Setup listener for i3 events. We'll be listening for window events.
+                // This event is triggered whenever the focus changes.
+                let mut listener = I3EventListener::connect()
+                    .with_context(|| "Could not connect to i3 (event listener)")?;
+                listener
+                    .subscribe(&[Subscription::Window])
+                    .with_context(|| "Could not subscribe to i3 events")?;
 
-            let tree = connection
-                .get_tree()
-                .with_context(|| "Could not get i3 tree")?;
-            let mut last_focused_id = find_focused_id(tree);
+                // Setup the RPC connect to i3. We'll use this to get the current i3 tree,
+                // to find the currently focused window's ID.
+                let mut connection =
+                    I3Connection::connect().with_context(|| "Could not connect to i3 (RPC)")?;
 
-            // Start listening for events. Should no longer exit from this point on.
-            for event in listener.listen() {
-                if let Err(err) = event {
-                    eprintln!("Error in event listener: {}", err);
-                    continue;
-                }
+                let tree = connection
+                    .get_tree()
+                    .with_context(|| "Could not get i3 tree")?;
+                let mut last_focused_id = find_focused_id(tree);
 
-                match connection.get_tree() {
-                    Ok(tree) => {
-                        let focused_id = find_focused_id(tree);
+                // Start listening for events. Should no longer exit from this point on.
+                for event in listener.listen() {
+                    if let Err(err) = event {
+                        eprintln!(
+                            "Restarting server in 1s because of error in event listener: {}",
+                            err
+                        );
 
-                        if let Some(focused_id) = focused_id {
-                            if let Some(last_focused_id) = last_focused_id && focused_id ==last_focused_id {
+                        thread::sleep(Duration::from_secs(1));
+
+                        continue 'server;
+                    }
+
+                    match connection.get_tree() {
+                        Ok(tree) => {
+                            let focused_id = find_focused_id(tree);
+
+                            if let Some(focused_id) = focused_id {
+                                if let Some(last_focused_id) = last_focused_id && focused_id ==last_focused_id {
                                 // Ignore if focus hasn't changed
                                 continue;
                             }
 
-                            if let Some(last_focused_id) = last_focused_id {
-                                if *debug {
-                                    eprintln!(
+                                if let Some(last_focused_id) = last_focused_id {
+                                    if *debug {
+                                        eprintln!(
                                         "Saving new last focused window with ID {last_focused_id}. Current focused window ID is {focused_id}."
                                     );
+                                    }
+
+                                    // Save the new last focused ID
+                                    cfg.last_focused_id = Some(last_focused_id);
+
+                                    if let Err(err) = confy::store("i3-back", "config", cfg) {
+                                        eprintln!("Could write i3-back config: {}", err);
+                                    }
                                 }
 
-                                // Save the new last focused ID
-                                cfg.last_focused_id = Some(last_focused_id);
-
-                                if let Err(err) = confy::store("i3-back", "config", cfg.clone()) {
-                                    eprintln!("Could write i3-back config: {}", err);
-                                }
+                                last_focused_id = Some(focused_id);
                             }
-
-                            last_focused_id = Some(focused_id);
                         }
-                    }
-                    Err(err) => {
-                        eprintln!("Could get i3 tree: {}", err);
+                        Err(err) => {
+                            eprintln!("Could get i3 tree: {}", err);
+                        }
                     }
                 }
             }
@@ -138,22 +159,18 @@ fn main() -> Result<()> {
 
 /// Traverses i3 tree to find which node (including floating) is focused.
 ///
-/// Only one node _should_ be focused at a time. This will return the first one.
-fn find_focused_id(tree: Node) -> Option<i64> {
-    if tree.focused {
-        return Some(tree.id);
+/// Only one node _should_ be focused at a time.
+fn find_focused_id(node: Node) -> Option<i64> {
+    let mut node = node;
+    while !node.focused {
+        let fid = match node.focus.into_iter().next() {
+            Some(fid) => fid,
+            None => return None,
+        };
+        node = match node.nodes.into_iter().find(|n| n.id == fid) {
+            Some(fid) => fid,
+            None => return None,
+        };
     }
-
-    for child in tree.nodes {
-        if let Some(focused_id) = find_focused_id(child) {
-            return Some(focused_id);
-        }
-    }
-    for child in tree.floating_nodes {
-        if let Some(focused_id) = find_focused_id(child) {
-            return Some(focused_id);
-        }
-    }
-
-    None
+    Some(node.id)
 }

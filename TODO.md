@@ -6,6 +6,11 @@ This feature could easily be upstream to i3. This could be added as new option t
 bindsym $mod+Tab focus last
 ```
 
+# Use socket instead of config
+
+Instead of using a config to store the last focused window's ID, the `i3-back switch` command could send a message on a socket to switch,
+which the server would handle. This would remove the need for file I/O, but would increase complexity (sockets can be difficult to setup/managed).
+
 # Stack-based switcher
 
 (This is just an idea, and may not be possible to implement with i3's current binding system.)
