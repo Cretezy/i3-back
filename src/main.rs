@@ -42,7 +42,7 @@ fn run() -> Result<(), Error> {
 
     // Start listening for i3 events
     for event in listener.listen() {
-        event.with_context(|| "Could not receive i3 event")?;
+        event.with_context(|| "Could not receive i3 event. This is normal when restarting i3")?;
 
         let tree = connection
             .get_tree()
@@ -71,18 +71,22 @@ fn run() -> Result<(), Error> {
 
 /// Traverses i3 tree to find which node (including floating) is focused.
 ///
-/// Only one node _should_ be focused at a time.
-fn find_focused_id(node: Node) -> Option<i64> {
-    let mut node = node;
-    while !node.focused {
-        let fid = match node.focus.into_iter().next() {
-            Some(fid) => fid,
-            None => return None,
-        };
-        node = match node.nodes.into_iter().find(|n| n.id == fid) {
-            Some(fid) => fid,
-            None => return None,
-        };
+/// Only one node _should_ be focused at a time. This will return the first one.
+fn find_focused_id(tree: Node) -> Option<i64> {
+    if tree.focused {
+        return Some(tree.id);
     }
-    Some(node.id)
+
+    for child in tree.nodes {
+        if let Some(focused_id) = find_focused_id(child) {
+            return Some(focused_id);
+        }
+    }
+    for child in tree.floating_nodes {
+        if let Some(focused_id) = find_focused_id(child) {
+            return Some(focused_id);
+        }
+    }
+
+    None
 }

@@ -1,6 +1,7 @@
-# Unrelease
+# v0.3.1 - 2023-02-26
 
 - Refactor error handling
+- Fix support for floating windows
 
 # v0.3.0 - 2023-02-26
 
