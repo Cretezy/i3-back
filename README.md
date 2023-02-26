@@ -23,7 +23,7 @@ i3-back is written in Rust. It can be installed through many method:
   cargo install i3-back
   ```
 
-- [AUR - i3-back-bin](https://aur.archlinux.org/packages/i3-back-bin), for Arch linux
+- AUR - [i3-back-bin](https://aur.archlinux.org/packages/i3-back-bin), for Arch Linux
 
   ```
   yay -S i3-back-bin
