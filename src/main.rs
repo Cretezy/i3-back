@@ -86,9 +86,9 @@ fn main() -> Result<()> {
 
                         if let Some(focused_id) = focused_id {
                             if let Some(last_focused_id) = last_focused_id && focused_id ==last_focused_id {
-                                        // Ignore if focus hasn't changed
-                                        continue;
-                                    }
+                                // Ignore if focus hasn't changed
+                                continue;
+                            }
 
                             if let Some(last_focused_id) = last_focused_id {
                                 if *debug {
