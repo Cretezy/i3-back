@@ -51,7 +51,7 @@ Replace `~/.cargo/bin` with wherever the i3-back binary is placed if not install
 
 ## Options
 
-Options are passed to `i3-back` as flags. Use `--help`/`-h` to see all options.
+All options are optional. Options are passed to `i3-back` as flags.
 
 Example `exec` with options:
 
