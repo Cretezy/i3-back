@@ -1,4 +1,3 @@
-#![feature(let_chains)]
 use std::process;
 use std::thread;
 use std::time::Duration;
@@ -96,9 +95,12 @@ fn run(args: &Args) -> Result<()> {
         let focused_id = find_focused_id(tree);
 
         if let Some(focused_id) = focused_id {
-            if let Some(last_focused_id) = last_focused_id && focused_id == last_focused_id {
-                // Ignore if focused window ID hasn't changed
-                continue;
+            match last_focused_id {
+                Some(last_focused_id) if last_focused_id == focused_id => {
+                    // Ignore if focused window ID hasn't changed
+                    continue;
+                }
+                _ => (),
             }
 
             if let Some(last_focused_id) = last_focused_id {
