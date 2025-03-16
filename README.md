@@ -21,7 +21,7 @@ i3-back requires i3/Sway. It is written in Rust. It can be installed through man
 - [Cargo](https://doc.rust-lang.org/cargo/getting-started/installation.html) (Rust's package manager) package:
 
   ```
-  cargo install i3-back
+  cargo +nightly install i3-back
   ```
 
 - Arch Linux from the AUR ([i3-back-bin](https://aur.archlinux.org/packages/i3-back-bin)):
